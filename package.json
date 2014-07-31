@@ -2,9 +2,21 @@
     "name": "dss",
     "version": "0.0.1",
     "description": "Document Storage System",
-    "keywords": [""],
+    "keywords": [
+        "mongodb",
+        "gridfs",
+        "jQuery"
+    ],
+    "bugs": {
+        "url": "http://github.com/steviee/dss/issues",
+        "email": "steviee@me.com"
+    },
     "author": "Stephan Eberle <steviee@me.com>",
     "main": "./import.js",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/steviee/dss.git"
+    },
     "dependencies": {
         "mongodb": "latest",
         "gridfs-stream": "latest",
