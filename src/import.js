@@ -1,3 +1,5 @@
+'use strict';
+
 /*
 
  What's the plan?
@@ -16,6 +18,7 @@ var mongo = require('mongodb'),
     walk = require('walk'),
     files = [],
     sha1 = require('sha1'),
+    path = require('path'),
     calls_running = 0;
 
 var storeFile = function (fileName, db) {
@@ -26,16 +29,17 @@ var storeFile = function (fileName, db) {
 
     var file = fs.readFileSync(fileName);
     var mimeType = mime.lookup(fileName);
+    var baseName = path.basename(fileName);
 
     calls_running += 1;
-    grid.put(file, { filename: fileName ,content_type: mimeType }, function (err, fileInfo) {
+    grid.put(file, { filename: baseName ,content_type: mimeType }, function () {
         calls_running -= 1;
         console.log("  => Done.");
-    })
+    });
 };
 
 fs.watch('./inbound', function (event, fileName) {
-    if (filename) {
+    if (fileName) {
         console.log('New file found: ' + fileName);
         storeFile(fileName);
     }
@@ -59,8 +63,6 @@ Db.connect('mongodb://localhost:27017/exampleDb', function (err, db) {
             console.log("Found " + files[i]);
             storeFile(files[i], db);
         }
-        ;
-
     });
 
 });
