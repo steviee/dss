@@ -1,4 +1,0 @@
-This is a test file. Nothing special!
-
-
-Should be easy to hold in storage!

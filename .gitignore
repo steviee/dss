@@ -5,6 +5,11 @@ logs
 # webstorm
 .idea
 
+# some work folders
+imported
+inbound
+work
+
 # Runtime data
 pids
 *.pid

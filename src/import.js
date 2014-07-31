@@ -43,6 +43,15 @@ if (!fs.existsSync(basepath + "imported")) {
     });
 }
 
+if (!fs.existsSync(basepath + "inbound")) {
+    fs.mkdirSync("inbound", 0766, function (err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
+
+
 var storeFile = function (fileName, db) {
     var grid = new Grid(db, 'files');
 
