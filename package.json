@@ -1,0 +1,16 @@
+{
+    "name": "dss",
+    "version": "0.0.1",
+    "description": "Document Storage System",
+    "keywords": [""],
+    "author": "Stephan Eberle <steviee@me.com>",
+    "main": "./import.js",
+    "dependencies": {
+        "mongodb": "latest",
+        "gridfs-stream": "latest",
+        "walk": "latest",
+        "sha1": "latest",
+        "mime": "latest"
+
+    }
+}
