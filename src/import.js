@@ -1,5 +1,3 @@
-'use strict';
-
 /*
 
  What's the plan?
@@ -18,8 +16,32 @@ var mongo = require('mongodb'),
     walk = require('walk'),
     files = [],
     sha1 = require('sha1'),
+    unoconv = require('unoconv'),
+    magick = require('imagemagick'),
     path = require('path'),
     calls_running = 0;
+
+// path setup
+
+var basepath = path.join(__dirname, "../");
+
+console.log("Base Path is " + basepath);
+
+if (!fs.existsSync(basepath + "work")) {
+    fs.mkdirSync("work", 0766, function (err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
+
+if (!fs.existsSync(basepath + "imported")) {
+    fs.mkdirSync("imported", 0766, function (err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
 
 var storeFile = function (fileName, db) {
     var grid = new Grid(db, 'files');
@@ -27,30 +49,61 @@ var storeFile = function (fileName, db) {
     var fileKey = sha1(fileName);
     console.log("  => Using key: " + fileKey);
 
-    var file = fs.readFileSync(fileName);
+
     var mimeType = mime.lookup(fileName);
     var baseName = path.basename(fileName);
+    var workName = path.join(basepath, "work/", baseName);
 
-    calls_running += 1;
-    grid.put(file, { filename: baseName ,content_type: mimeType }, function () {
-        calls_running -= 1;
-        console.log("  => Done.");
+    fs.renameSync(fileName, workName, function (err) {
+        if (err) throw err;
+        console.log('  => Moved to \"work\".');
+
+    });
+
+    console.log("  => Step 1: Creating PDF");
+
+    unoconv.convert(workName, 'pdf', function (err, result) {
+        // result is returned as a Buffer
+        fs.writeFile(path.join(basepath, "work/temp.pdf"), result);
+
+        console.log("  => Step 2: Creating JPEGs");
+
+        magick.convert([path.join(basepath, "work/temp.pdf"), '-density', '400', path.join(basepath, "work/page-%d.jpg")], function (err, stdout) {
+            if (err) throw err;
+            console.log('ImageMagick:', stdout);
+
+            var file = fs.readFileSync(workName);
+
+            calls_running += 1;
+            grid.put(file, { filename: baseName, content_type: mimeType }, function () {
+                calls_running -= 1;
+                console.log("  => Done.");
+
+                fs.renameSync(workName, path.join(basepath, "imported/", baseName), function (err) {
+                    if (err) throw err;
+                    console.log('  => Moved to \"imported\".');
+                });
+
+            });
+        });
     });
 };
 
-fs.watch('./inbound', function (event, fileName) {
+fs.watch(basepath + 'inbound', function (event, fileName) {
     if (fileName) {
-        console.log('New file found: ' + fileName);
-        storeFile(fileName);
+        if (event !== 'rename') {
+            console.log('New file found: ' + fileName);
+            storeFile(fileName);
+        }
     }
 });
 
-Db.connect('mongodb://localhost:27017/exampleDb', function (err, db) {
+Db.connect('mongodb://localhost:27017/dss', function (err, db) {
 
     console.log("Connected to MongoDb!");
 
     // Walker options
-    var walker = walk.walk('./inbound', { followLinks: false });
+    var walker = walk.walk(basepath + 'inbound', { followLinks: false });
 
     walker.on('file', function (root, stat, next) {
         // Add this file to the list of files

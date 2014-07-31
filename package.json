@@ -22,7 +22,9 @@
         "gridfs-stream": "latest",
         "walk": "latest",
         "sha1": "latest",
-        "mime": "latest"
+        "mime": "latest",
+        "unoconv": "latest",
+        "imagemagick": "latest"
     },
     "devDependencies": {
         "grunt-contrib-clean": "~0.4.0rc6",
